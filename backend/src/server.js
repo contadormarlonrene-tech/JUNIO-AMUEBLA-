@@ -29,11 +29,23 @@ app.post('/api/setup', async (req, res) => {
   const schemaPath = path.join(__dirname, '..', 'schema.sql');
   const sql = fs.readFileSync(schemaPath, 'utf8');
 
-  // Divide por ; ignorando líneas de comentario y vacías
+  // Divide por ; y elimina solo bloques sin SQL real (solo comentarios o vacíos)
   const sentencias = sql
     .split(';')
     .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith('--'));
+    .filter(s => {
+      // Quitar líneas de comentario para verificar si queda algo ejecutable
+      const sinComentarios = s.split('\n')
+        .filter(l => !l.trim().startsWith('--'))
+        .join('\n')
+        .trim();
+      return sinComentarios.length > 0;
+    })
+    .map(s => {
+      // Ejecutar solo las líneas que no son comentarios puras de bloque
+      return s.split('\n').filter(l => !l.trim().startsWith('--')).join('\n').trim();
+    })
+    .filter(s => s.length > 0);
 
   const resultados = [];
   for (const sentencia of sentencias) {
