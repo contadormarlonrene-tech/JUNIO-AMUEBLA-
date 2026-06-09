@@ -1,8 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
+const db = require('./db');
 
 app.use(cors());
 app.use(express.json());
@@ -19,6 +22,18 @@ app.use('/api/dashboard',   require('./routes/dashboard'));
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', app: 'Amuebla Tu Hogar API', version: '1.0.0' });
+});
+
+// Endpoint de inicialización — crea todas las tablas ejecutando schema.sql
+app.post('/api/setup', async (req, res) => {
+  try {
+    const schemaPath = path.join(__dirname, '..', 'schema.sql');
+    const sql = fs.readFileSync(schemaPath, 'utf8');
+    await db.query(sql);
+    res.json({ ok: true, mensaje: 'Base de datos inicializada correctamente' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
