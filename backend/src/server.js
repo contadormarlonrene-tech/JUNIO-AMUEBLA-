@@ -24,16 +24,35 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', app: 'Amuebla Tu Hogar API', version: '1.0.0' });
 });
 
-// Endpoint de inicialización — crea todas las tablas ejecutando schema.sql
+// Endpoint de inicialización — ejecuta cada sentencia SQL por separado
 app.post('/api/setup', async (req, res) => {
-  try {
-    const schemaPath = path.join(__dirname, '..', 'schema.sql');
-    const sql = fs.readFileSync(schemaPath, 'utf8');
-    await db.query(sql);
-    res.json({ ok: true, mensaje: 'Base de datos inicializada correctamente' });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  const schemaPath = path.join(__dirname, '..', 'schema.sql');
+  const sql = fs.readFileSync(schemaPath, 'utf8');
+
+  // Divide por ; ignorando líneas de comentario y vacías
+  const sentencias = sql
+    .split(';')
+    .map(s => s.trim())
+    .filter(s => s.length > 0 && !s.startsWith('--'));
+
+  const resultados = [];
+  for (const sentencia of sentencias) {
+    try {
+      await db.query(sentencia);
+      resultados.push({ ok: true, sql: sentencia.substring(0, 60) });
+    } catch (e) {
+      resultados.push({ ok: false, error: e.message, sql: sentencia.substring(0, 60) });
+    }
   }
+
+  const errores = resultados.filter(r => !r.ok);
+  res.json({
+    ok: errores.length === 0,
+    total: sentencias.length,
+    exitosas: resultados.filter(r => r.ok).length,
+    errores: errores.length,
+    detalle: errores
+  });
 });
 
 const PORT = process.env.PORT || 3000;
