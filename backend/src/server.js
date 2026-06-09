@@ -67,6 +67,26 @@ app.post('/api/setup', async (req, res) => {
   });
 });
 
+// Limpieza de duplicados — solo se usa una vez
+app.post('/api/cleanup', async (req, res) => {
+  try {
+    // Eliminar categorías duplicadas dejando solo la de menor id por nombre
+    await db.query(`
+      DELETE FROM categorias WHERE id NOT IN (
+        SELECT MIN(id) FROM categorias GROUP BY nombre
+      )
+    `);
+    // Agregar restricción UNIQUE si no existe
+    await db.query(`
+      ALTER TABLE categorias ADD CONSTRAINT categorias_nombre_unique UNIQUE (nombre)
+    `).catch(() => {}); // ignora si ya existe
+    const { rows } = await db.query('SELECT COUNT(*) FROM categorias');
+    res.json({ ok: true, categorias_restantes: rows[0].count });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 async function initDB() {
   const schemaPath = path.join(__dirname, '..', 'schema.sql');
   const sql = fs.readFileSync(schemaPath, 'utf8');

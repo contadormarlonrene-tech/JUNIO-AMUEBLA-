@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS terceros (
 -- Categorías de ingresos y egresos
 CREATE TABLE IF NOT EXISTS categorias (
   id      SERIAL PRIMARY KEY,
-  nombre  VARCHAR(100) NOT NULL,
+  nombre  VARCHAR(100) NOT NULL UNIQUE,
   tipo    VARCHAR(10)  NOT NULL CHECK (tipo IN ('ingreso','egreso','ambos')),
   color   VARCHAR(20)  DEFAULT '#6b6860',
   icono   VARCHAR(10)  DEFAULT '📌'
