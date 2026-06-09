@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amuebla Tu Hogar — Panel de Ingreso</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #f7f5f0;
+  --bg2:        #edeae3;
+  --white:      #ffffff;
+  --text:       #1c1a18;
+  --text2:      #6b6860;
+  --text3:      #a09e9a;
+  --green:      #1a6b47; --green-bg: #e8f5ee;
+  --red:        #b83232; --red-bg:   #fdf0f0;
+  --amber:      #a05c10; --amber-bg: #fef8ec;
+  --blue:       #1a4fa0; --blue-bg:  #eef4ff;
+  --purple:     #6635b8; --purple-bg:#f4eeff;
+  --border:     rgba(0,0,0,0.08);
+  --shadow:     0 2px 12px rgba(0,0,0,0.08);
+  --r:          14px;
+  --r-sm:       8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* HEADER */
+.header {
+  background: var(--text);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.header h1 { color: #fff; font-size: 17px; font-weight: 600; }
+.header p  { color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 2px; }
+.badge-admin { background: var(--amber); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 100px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* NAV */
+.nav { background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 10px 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+.nav-btn { border: 1.5px solid var(--border); background: transparent; color: var(--text2);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 7px 16px; border-radius: 100px; cursor: pointer; transition: all .15s; }
+.nav-btn:hover  { background: var(--bg2); }
+.nav-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* MAIN */
+.main { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* CARD */
+.card { background: var(--white); border-radius: var(--r); border: 1px solid var(--border);
+  box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 20px; }
+
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.col1  { grid-template-columns: 1fr; }
+@media(max-width:600px){ .form-grid, .form-grid.cols3 { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+input, select, textarea {
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  padding: 10px 12px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  color: var(--text); background: var(--bg); transition: border-color .15s; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--text); background: #fff; }
+input[type=number] { font-family: 'DM Mono', monospace; }
+textarea { resize: vertical; min-height: 72px; }
+
+/* TIPO TOGGLE */
+.tipo-toggle { display: flex; gap: 8px; }
+.tipo-btn { flex: 1; padding: 10px; border: 2px solid var(--border); border-radius: var(--r-sm);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  background: var(--bg); color: var(--text2); text-align: center; transition: all .15s; }
+.tipo-btn.ing.active { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.tipo-btn.egr.active { border-color: var(--red);   background: var(--red-bg);   color: var(--red); }
+
+/* BTN */
+.btn { padding: 11px 28px; border-radius: var(--r-sm); border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; transition: opacity .15s; }
+.btn:hover { opacity: .85; }
+.btn-primary { background: var(--text); color: #fff; }
+.btn-green   { background: var(--green); color: #fff; }
+.btn-red     { background: var(--red);   color: #fff; }
+.btn-sm      { padding: 6px 14px; font-size: 12px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 22px;
+  border-radius: var(--r-sm); font-size: 14px; font-weight: 500; color: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; display: none; }
+.toast.show    { display: block; animation: slideIn .3s ease; }
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--red); }
+@keyframes slideIn { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+/* TABLA RECIENTES */
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text3); padding: 8px 10px;
+  border-bottom: 1px solid var(--border); }
+.tbl td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--bg); }
+.pos { color: var(--green); font-family: 'DM Mono', monospace; font-weight: 500; }
+.neg { color: var(--red);   font-family: 'DM Mono', monospace; font-weight: 500; }
+.badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; }
+.b-green  { background: var(--green-bg);  color: var(--green); }
+.b-red    { background: var(--red-bg);    color: var(--red); }
+.b-amber  { background: var(--amber-bg);  color: var(--amber); }
+.b-blue   { background: var(--blue-bg);   color: var(--blue); }
+.b-purple { background: var(--purple-bg); color: var(--purple); }
+
+/* ESTADO API */
+.api-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.6); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
+.dot.ok  { background: #4ade80; }
+.dot.err { background: var(--red); }
+
+/* SECTION TITLE */
+.section-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.section-sub   { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+
+/* CHECKBOX ROW */
+.check-row { display: flex; align-items: center; gap: 8px; }
+.check-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+.check-row label { text-transform: none; font-size: 14px; font-weight: 400; color: var(--text); cursor: pointer; }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Amuebla Tu Hogar — Panel de Ingreso</h1>
+    <p>Marlon Hernández · Contador Público</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="api-status"><div class="dot" id="apiDot"></div><span id="apiTxt">Conectando...</span></div>
+    <span class="badge-admin">Admin</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('movimiento',this)">💸 Movimiento</button>
+  <button class="nav-btn" onclick="show('proyectos',this)">🏗️ Proyectos</button>
+  <button class="nav-btn" onclick="show('terceros',this)">👥 Terceros</button>
+  <button class="nav-btn" onclick="show('nomina',this)">👷 Nómina</button>
+  <button class="nav-btn" onclick="show('facturas',this)">🧾 Facturas DIAN</button>
+  <button class="nav-btn" onclick="show('recientes',this)">📋 Recientes</button>
+</nav>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════
+       MOVIMIENTO
+  ══════════════════════════════════════ -->
+  <div id="page-movimiento" class="page active">
+    <p class="section-title">Registrar Movimiento</p>
+    <p class="section-sub">Ingresa cualquier entrada o salida de dinero — caja o banco.</p>
+
+    <div class="card">
+      <div class="card-title">💸 Tipo de movimiento</div>
+      <div class="tipo-toggle" style="margin-bottom:20px">
+        <div class="tipo-btn ing active" id="btnIng" onclick="setTipo('ingreso')">▲ Ingreso</div>
+        <div class="tipo-btn egr"        id="btnEgr" onclick="setTipo('egreso')">▼ Egreso</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="mov-fecha">
+        </div>
+        <div class="form-group">
+          <label>Valor (COP)</label>
+          <input type="number" id="mov-valor" placeholder="0" min="0">
+        </div>
+        <div class="form-group full">
+          <label>Concepto</label>
+          <input type="text" id="mov-concepto" placeholder="Ej: Abono proyecto Marcela, Compra tela...">
+        </div>
+        <div class="form-group">
+          <label>Subtipo</label>
+          <select id="mov-subtipo">
+            <option value="abono_proyecto">Abono de proyecto</option>
+            <option value="venta">Venta / Cobro</option>
+            <option value="costo_proyecto">Costo del proyecto</option>
+            <option value="gasto_proyecto">Gasto del proyecto</option>
+            <option value="gasto_operativo">Gasto operativo</option>
+            <option value="gasto_giovanny">Gasto Giovanny</option>
+            <option value="pago_proveedor">Pago a proveedor</option>
+            <option value="nomina">Nómina</option>
+            <option value="prestamo">Préstamo</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Método de pago</label>
+          <select id="mov-metodo">
+            <option value="efectivo">💵 Efectivo (Caja)</option>
+            <option value="bancolombia">🏦 Bancolombia</option>
+            <option value="nequi">📱 Nequi</option>
+            <option value="otro_banco">🏛️ Otro banco</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Proyecto (opcional)</label>
+          <select id="mov-proyecto">
+            <option value="">— Sin proyecto —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Categoría (opcional)</label>
+          <select id="mov-categoria">
+            <option value="">— Sin categoría —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tercero (opcional)</label>
+          <select id="mov-tercero">
+            <option value="">— Sin tercero —</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <div class="check-row">
+            <input type="checkbox" id="mov-factura" onchange="toggleFactura()">
+            <label for="mov-factura">¿Tiene factura?</label>
+          </div>
+        </div>
+        <div class="form-group" id="num-factura-group" style="display:none">
+          <label>Número de factura</label>
+          <input type="text" id="mov-num-factura" placeholder="Ej: FV-2026-001">
+        </div>
+        <div class="form-group full">
+          <label>Notas</label>
+          <textarea id="mov-notas" placeholder="Información adicional..."></textarea>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <button class="btn btn-green" onclick="guardarMovimiento()">✅ Guardar movimiento</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PROYECTOS
+  ══════════════════════════════════════ -->
+  <div id="page-proyectos" class="page">
+    <p class="section-title">Proyectos</p>
+    <p class="section-sub">Crea y gestiona proyectos de muebles por cliente.</p>
+
+    <div class="card">
+      <div class="card-title">🏗️ Nuevo proyecto</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre del proyecto</label>
+          <input type="text" id="proy-nombre" placeholder="Ej: Marcela, Oswaldo Duarte, Sala comedor Rojas...">
+        </div>
+        <div class="form-group">
+          <label>Cliente</label>
+          <select id="proy-cliente">
+            <option value="">— Selecciona cliente —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor total del proyecto (COP)</label>
+          <input type="number" id="proy-valor" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Fecha de inicio</label>
+          <input type="date" id="proy-inicio">
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="proy-estado">
+            <option value="activo">Activo</option>
+            <option value="finalizado">Finalizado</option>
+            <option value="pausado">Pausado</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Notas</label>
+          <textarea id="proy-notas" placeholder="Descripción del proyecto..."></textarea>
+        </div>
+      </div>
+      <hr class="divider">
+      <button class="btn btn-green" onclick="guardarProyecto()">✅ Crear proyecto</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Proyectos activos</div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Proyecto</th><th>Cliente</th><th>Valor total</th>
+            <th>Abonado</th><th>Saldo</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-proyectos">
+          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TERCEROS
+  ══════════════════════════════════════ -->
+  <div id="page-terceros" class="page">
+    <p class="section-title">Terceros</p>
+    <p class="section-sub">Clientes, proveedores, empleados y socios.</p>
+
+    <div class="card">
+      <div class="card-title">👤 Nuevo tercero</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre completo o razón social</label>
+          <input type="text" id="ter-nombre" placeholder="Nombre...">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="ter-tipo">
+            <option value="cliente">Cliente</option>
+            <option value="proveedor">Proveedor</option>
+            <option value="empleado">Empleado</option>
+            <option value="socio">Socio</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Documento (CC / NIT)</label>
+          <input type="text" id="ter-documento" placeholder="Ej: 12345678">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" id="ter-telefono" placeholder="Ej: 300 123 4567">
+        </div>
+        <div class="form-group">
+          <label>Email (opcional)</label>
+          <input type="email" id="ter-email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group full">
+          <label>Notas</label>
+          <textarea id="ter-notas" placeholder="Información adicional..."></textarea>
+        </div>
+      </div>
+      <hr class="divider">
+      <button class="btn btn-green" onclick="guardarTercero()">✅ Guardar tercero</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Listado de terceros</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-primary" onclick="filtrarTerceros('')">Todos</button>
+        <button class="btn btn-sm" style="background:var(--green-bg);color:var(--green)" onclick="filtrarTerceros('cliente')">Clientes</button>
+        <button class="btn btn-sm" style="background:var(--red-bg);color:var(--red)" onclick="filtrarTerceros('proveedor')">Proveedores</button>
+        <button class="btn btn-sm" style="background:var(--amber-bg);color:var(--amber)" onclick="filtrarTerceros('empleado')">Empleados</button>
+        <button class="btn btn-sm" style="background:var(--purple-bg);color:var(--purple)" onclick="filtrarTerceros('socio')">Socios</button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Nombre</th><th>Tipo</th><th>Documento</th><th>Teléfono</th></tr>
+        </thead>
+        <tbody id="tabla-terceros">
+          <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       NÓMINA
+  ══════════════════════════════════════ -->
+  <div id="page-nomina" class="page">
+    <p class="section-title">Nómina</p>
+    <p class="section-sub">Registra el pago semanal o quincenal de empleados.</p>
+
+    <div class="card">
+      <div class="card-title">👷 Nuevo período de nómina</div>
+      <div class="form-grid cols3">
+        <div class="form-group">
+          <label>Período</label>
+          <input type="text" id="nom-periodo" placeholder="Ej: 2026-06-S1">
+        </div>
+        <div class="form-group">
+          <label>Fecha inicio</label>
+          <input type="date" id="nom-inicio">
+        </div>
+        <div class="form-group">
+          <label>Fecha fin</label>
+          <input type="date" id="nom-fin">
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="card-title">Empleados del período</div>
+      <div id="nom-empleados-lista"></div>
+      <button class="btn btn-sm" style="background:var(--blue-bg);color:var(--blue);margin-top:12px" onclick="agregarFilaEmpleado()">+ Agregar empleado</button>
+
+      <hr class="divider">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:14px;color:var(--text2)">Total nómina: <span class="mono" id="nom-total">$0</span></div>
+        <button class="btn btn-green" onclick="guardarNomina()">✅ Guardar nómina</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       FACTURAS DIAN
+  ══════════════════════════════════════ -->
+  <div id="page-facturas" class="page">
+    <p class="section-title">Facturas DIAN</p>
+    <p class="section-sub">Registra las facturas electrónicas recibidas.</p>
+
+    <div class="card">
+      <div class="card-title">🧾 Nueva factura</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Número de factura</label>
+          <input type="text" id="fac-numero" placeholder="Ej: FV-2026-0123">
+        </div>
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="fac-fecha">
+        </div>
+        <div class="form-group full">
+          <label>Proveedor</label>
+          <select id="fac-proveedor">
+            <option value="">— Selecciona proveedor —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor bruto (COP)</label>
+          <input type="number" id="fac-bruto" placeholder="0" oninput="calcularNeto()">
+        </div>
+        <div class="form-group">
+          <label>IVA (COP)</label>
+          <input type="number" id="fac-iva" placeholder="0" oninput="calcularNeto()">
+        </div>
+        <div class="form-group">
+          <label>Retención (COP)</label>
+          <input type="number" id="fac-retencion" placeholder="0" oninput="calcularNeto()">
+        </div>
+        <div class="form-group">
+          <label>Valor neto a pagar</label>
+          <input type="number" id="fac-neto" placeholder="0" class="mono" readonly style="background:#f0f0f0">
+        </div>
+        <div class="form-group full">
+          <label>Notas</label>
+          <textarea id="fac-notas" placeholder="Descripción de la factura..."></textarea>
+        </div>
+      </div>
+      <hr class="divider">
+      <button class="btn btn-green" onclick="guardarFactura()">✅ Guardar factura</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Facturas registradas</div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Número</th><th>Proveedor</th><th>Fecha</th><th>Bruto</th><th>IVA</th><th>Neto</th></tr>
+        </thead>
+        <tbody id="tabla-facturas">
+          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       RECIENTES
+  ══════════════════════════════════════ -->
+  <div id="page-recientes" class="page">
+    <p class="section-title">Movimientos Recientes</p>
+    <p class="section-sub">Últimos registros ingresados. Haz clic en 🗑️ para eliminar.</p>
+
+    <div class="card">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <input type="month" id="filtro-mes" style="max-width:160px" onchange="cargarRecientes()">
+        <button class="btn btn-sm btn-primary" onclick="cargarRecientes()">🔄 Actualizar</button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Fecha</th><th>Concepto</th><th>Método</th><th>Proyecto</th><th>Valor</th><th></th></tr>
+        </thead>
+        <tbody id="tabla-recientes">
+          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Selecciona un mes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://junio-amuebla.onrender.com/api';
+let tipoActual = 'ingreso';
+let empleadosData = [];
+
+// ─── NAVEGACIÓN ───────────────────────────────────
+function show(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'recientes')  cargarRecientes();
+  if (name === 'proyectos')  cargarTablaProyectos();
+  if (name === 'terceros')   cargarTablaTerceros();
+  if (name === 'facturas')   cargarTablaFacturas();
+}
+
+// ─── TOAST ────────────────────────────────────────
+function toast(msg, tipo='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + tipo;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ─── FORMATO MONEDA ───────────────────────────────
+function fmt(v) {
+  return '$' + Number(v||0).toLocaleString('es-CO');
+}
+
+// ─── ESTADO API ───────────────────────────────────
+async function checkApi() {
+  try {
+    const r = await fetch(API.replace('/api',''));
+    const d = await r.json();
+    document.getElementById('apiDot').className = 'dot ok';
+    document.getElementById('apiTxt').textContent = 'Conectado';
+  } catch {
+    document.getElementById('apiDot').className = 'dot err';
+    document.getElementById('apiTxt').textContent = 'Sin conexión';
+  }
+}
+
+// ─── CARGAR SELECTS ───────────────────────────────
+async function cargarSelects() {
+  try {
+    const [proyectos, categorias, terceros] = await Promise.all([
+      fetch(`${API}/proyectos`).then(r=>r.json()),
+      fetch(`${API}/categorias`).then(r=>r.json()),
+      fetch(`${API}/terceros`).then(r=>r.json())
+    ]);
+
+    // Proyectos
+    const selProy = document.getElementById('mov-proyecto');
+    const selProyF = document.getElementById('proy-cliente');
+    proyectos.forEach(p => {
+      selProy.innerHTML += `<option value="${p.id}">${p.nombre}</option>`;
+    });
+    terceros.filter(t=>t.tipo==='cliente').forEach(t => {
+      selProyF.innerHTML += `<option value="${t.id}">${t.nombre}</option>`;
+    });
+
+    // Categorías
+    const selCat = document.getElementById('mov-categoria');
+    categorias.forEach(c => {
+      selCat.innerHTML += `<option value="${c.id}">${c.icono} ${c.nombre}</option>`;
+    });
+
+    // Terceros
+    const selTer = document.getElementById('mov-tercero');
+    const selFacProv = document.getElementById('fac-proveedor');
+    terceros.forEach(t => {
+      selTer.innerHTML += `<option value="${t.id}">${t.nombre} (${t.tipo})</option>`;
+    });
+    terceros.filter(t=>t.tipo==='proveedor').forEach(t => {
+      selFacProv.innerHTML += `<option value="${t.id}">${t.nombre}</option>`;
+    });
+
+    empleadosData = terceros.filter(t => t.tipo === 'empleado' || t.tipo === 'socio');
+  } catch(e) {
+    console.error('Error cargando selects:', e);
+  }
+}
+
+// ─── MOVIMIENTO ───────────────────────────────────
+function setTipo(tipo) {
+  tipoActual = tipo;
+  document.getElementById('btnIng').classList.toggle('active', tipo==='ingreso');
+  document.getElementById('btnEgr').classList.toggle('active', tipo==='egreso');
+  // Ajusta subtipo según tipo
+  const sub = document.getElementById('mov-subtipo');
+  if (tipo === 'ingreso') {
+    sub.value = 'abono_proyecto';
+  } else {
+    sub.value = 'gasto_operativo';
+  }
+}
+
+function toggleFactura() {
+  const checked = document.getElementById('mov-factura').checked;
+  document.getElementById('num-factura-group').style.display = checked ? 'block' : 'none';
+}
+
+async function guardarMovimiento() {
+  const fecha    = document.getElementById('mov-fecha').value;
+  const valor    = document.getElementById('mov-valor').value;
+  const concepto = document.getElementById('mov-concepto').value.trim();
+  if (!fecha || !valor || !concepto) { toast('Fecha, valor y concepto son obligatorios', 'error'); return; }
+
+  const body = {
+    fecha, tipo: tipoActual,
+    subtipo:      document.getElementById('mov-subtipo').value,
+    concepto,
+    valor:        parseFloat(valor),
+    metodo_pago:  document.getElementById('mov-metodo').value,
+    proyecto_id:  document.getElementById('mov-proyecto').value  || null,
+    categoria_id: document.getElementById('mov-categoria').value || null,
+    tercero_id:   document.getElementById('mov-tercero').value   || null,
+    tiene_factura: document.getElementById('mov-factura').checked,
+    numero_factura: document.getElementById('mov-num-factura').value || null,
+    notas:        document.getElementById('mov-notas').value || null
+  };
+
+  try {
+    const r = await fetch(`${API}/movimientos`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    toast('✅ Movimiento guardado correctamente');
+    // Limpiar formulario
+    ['mov-valor','mov-concepto','mov-notas','mov-num-factura'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('mov-factura').checked = false;
+    toggleFactura();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ─── PROYECTOS ────────────────────────────────────
+async function guardarProyecto() {
+  const nombre = document.getElementById('proy-nombre').value.trim();
+  const valor  = document.getElementById('proy-valor').value;
+  if (!nombre) { toast('El nombre es obligatorio', 'error'); return; }
+
+  const body = {
+    nombre,
+    cliente_id:  document.getElementById('proy-cliente').value  || null,
+    valor_total: parseFloat(valor) || 0,
+    estado:      document.getElementById('proy-estado').value,
+    fecha_inicio: document.getElementById('proy-inicio').value  || null,
+    notas:       document.getElementById('proy-notas').value    || null
+  };
+
+  try {
+    const r = await fetch(`${API}/proyectos`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    toast('✅ Proyecto creado');
+    ['proy-nombre','proy-valor','proy-notas'].forEach(id => document.getElementById(id).value = '');
+    cargarTablaProyectos();
+    cargarSelects();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function cargarTablaProyectos() {
+  try {
+    const data = await fetch(`${API}/proyectos`).then(r=>r.json());
+    const tbody = document.getElementById('tabla-proyectos');
+    if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin proyectos aún</td></tr>'; return; }
+    tbody.innerHTML = data.map(p => {
+      const saldo = p.saldo_por_cobrar;
+      return `<tr>
+        <td><strong>${p.nombre}</strong></td>
+        <td>${p.cliente_nombre||'—'}</td>
+        <td class="mono">${fmt(p.valor_total)}</td>
+        <td class="pos">${fmt(p.total_abonos)}</td>
+        <td class="${saldo>0?'neg':'pos'}">${fmt(saldo)}</td>
+        <td><span class="badge ${p.estado==='activo'?'b-green':p.estado==='finalizado'?'b-blue':'b-amber'}">${p.estado}</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ─── TERCEROS ─────────────────────────────────────
+async function guardarTercero() {
+  const nombre = document.getElementById('ter-nombre').value.trim();
+  if (!nombre) { toast('El nombre es obligatorio', 'error'); return; }
+
+  const body = {
+    nombre,
+    tipo:      document.getElementById('ter-tipo').value,
+    documento: document.getElementById('ter-documento').value || null,
+    telefono:  document.getElementById('ter-telefono').value  || null,
+    email:     document.getElementById('ter-email').value     || null,
+    notas:     document.getElementById('ter-notas').value     || null
+  };
+
+  try {
+    const r = await fetch(`${API}/terceros`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    toast('✅ Tercero guardado');
+    ['ter-nombre','ter-documento','ter-telefono','ter-email','ter-notas'].forEach(id => document.getElementById(id).value = '');
+    cargarTablaTerceros();
+    cargarSelects();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function cargarTablaTerceros(tipo='') {
+  try {
+    const url = tipo ? `${API}/terceros?tipo=${tipo}` : `${API}/terceros`;
+    const data = await fetch(url).then(r=>r.json());
+    const tbody = document.getElementById('tabla-terceros');
+    if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">Sin registros</td></tr>'; return; }
+    const colores = { cliente:'b-green', proveedor:'b-red', empleado:'b-amber', socio:'b-purple' };
+    tbody.innerHTML = data.map(t => `<tr>
+      <td><strong>${t.nombre}</strong></td>
+      <td><span class="badge ${colores[t.tipo]||''}">${t.tipo}</span></td>
+      <td>${t.documento||'—'}</td>
+      <td>${t.telefono||'—'}</td>
+    </tr>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+function filtrarTerceros(tipo) { cargarTablaTerceros(tipo); }
+
+// ─── NÓMINA ───────────────────────────────────────
+function agregarFilaEmpleado() {
+  const div = document.createElement('div');
+  div.className = 'form-grid cols3';
+  div.style.marginBottom = '12px';
+  div.innerHTML = `
+    <div class="form-group">
+      <label>Empleado</label>
+      <select class="nom-emp" onchange="recalcularNomina()">
+        <option value="">— Selecciona —</option>
+        ${empleadosData.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Salario base</label>
+      <input type="number" class="nom-salario" placeholder="0" oninput="recalcularNomina()">
+    </div>
+    <div class="form-group">
+      <label>Préstamos / Deduc.</label>
+      <input type="number" class="nom-prest" placeholder="0" oninput="recalcularNomina()">
+    </div>`;
+  document.getElementById('nom-empleados-lista').appendChild(div);
+}
+
+function recalcularNomina() {
+  const salarios  = [...document.querySelectorAll('.nom-salario')].map(i=>parseFloat(i.value)||0);
+  const prestamos = [...document.querySelectorAll('.nom-prest')].map(i=>parseFloat(i.value)||0);
+  const total = salarios.reduce((a,b)=>a+b,0) - prestamos.reduce((a,b)=>a+b,0);
+  document.getElementById('nom-total').textContent = fmt(total);
+}
+
+async function guardarNomina() {
+  const periodo = document.getElementById('nom-periodo').value.trim();
+  const inicio  = document.getElementById('nom-inicio').value;
+  const fin     = document.getElementById('nom-fin').value;
+  if (!periodo||!inicio||!fin) { toast('Período, inicio y fin son obligatorios','error'); return; }
+
+  const emps  = [...document.querySelectorAll('.nom-emp')].map(s=>s.value);
+  const sals  = [...document.querySelectorAll('.nom-salario')].map(i=>parseFloat(i.value)||0);
+  const prests= [...document.querySelectorAll('.nom-prest')].map(i=>parseFloat(i.value)||0);
+
+  const detalle = emps.map((id,i) => ({
+    empleado_id: id, salario_base: sals[i], prestamos: prests[i],
+    metodo_pago: 'efectivo'
+  })).filter(d=>d.empleado_id);
+
+  if (!detalle.length) { toast('Agrega al menos un empleado','error'); return; }
+
+  try {
+    const r = await fetch(`${API}/nomina/periodos`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ periodo, fecha_inicio: inicio, fecha_fin: fin, detalle })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    toast('✅ Nómina guardada');
+    document.getElementById('nom-empleados-lista').innerHTML = '';
+    document.getElementById('nom-total').textContent = '$0';
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+// ─── FACTURAS ─────────────────────────────────────
+function calcularNeto() {
+  const bruto    = parseFloat(document.getElementById('fac-bruto').value)||0;
+  const iva      = parseFloat(document.getElementById('fac-iva').value)||0;
+  const ret      = parseFloat(document.getElementById('fac-retencion').value)||0;
+  document.getElementById('fac-neto').value = bruto - ret;
+}
+
+async function guardarFactura() {
+  const numero = document.getElementById('fac-numero').value.trim();
+  const fecha  = document.getElementById('fac-fecha').value;
+  const bruto  = document.getElementById('fac-bruto').value;
+  if (!numero||!fecha||!bruto) { toast('Número, fecha y valor son obligatorios','error'); return; }
+
+  const body = {
+    numero_factura: numero,
+    proveedor_id:   document.getElementById('fac-proveedor').value || null,
+    fecha, valor_bruto: parseFloat(bruto),
+    iva:       parseFloat(document.getElementById('fac-iva').value)||0,
+    retencion: parseFloat(document.getElementById('fac-retencion').value)||0,
+    notas:     document.getElementById('fac-notas').value || null
+  };
+
+  try {
+    const r = await fetch(`${API}/facturas`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    toast('✅ Factura guardada');
+    ['fac-numero','fac-bruto','fac-iva','fac-retencion','fac-neto','fac-notas'].forEach(id=>document.getElementById(id).value='');
+    cargarTablaFacturas();
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+async function cargarTablaFacturas() {
+  try {
+    const data = await fetch(`${API}/facturas`).then(r=>r.json());
+    const tbody = document.getElementById('tabla-facturas');
+    if (!data.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin facturas aún</td></tr>'; return; }
+    tbody.innerHTML = data.map(f=>`<tr>
+      <td class="mono">${f.numero_factura}</td>
+      <td>${f.proveedor_nombre||'—'}</td>
+      <td>${f.fecha}</td>
+      <td class="mono">${fmt(f.valor_bruto)}</td>
+      <td class="mono">${fmt(f.iva)}</td>
+      <td class="mono pos">${fmt(f.valor_neto)}</td>
+    </tr>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ─── RECIENTES ────────────────────────────────────
+async function cargarRecientes() {
+  const mes = document.getElementById('filtro-mes').value;
+  if (!mes) return;
+  try {
+    const data = await fetch(`${API}/movimientos?mes=${mes}`).then(r=>r.json());
+    const tbody = document.getElementById('tabla-recientes');
+    if (!data.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin movimientos en este mes</td></tr>'; return; }
+    tbody.innerHTML = data.map(m=>`<tr>
+      <td>${m.fecha}</td>
+      <td>
+        <div style="font-weight:500">${m.concepto}</div>
+        <div style="font-size:11px;color:var(--text3)">${m.subtipo}${m.proyecto_nombre?' · '+m.proyecto_nombre:''}</div>
+      </td>
+      <td><span class="badge ${m.metodo_pago==='efectivo'?'b-amber':m.metodo_pago==='nequi'?'b-purple':'b-blue'}">${m.metodo_pago}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${m.proyecto_nombre||'—'}</td>
+      <td class="${m.tipo==='ingreso'?'pos':'neg'}">${m.tipo==='ingreso'?'+':'-'}${fmt(m.valor)}</td>
+      <td><button class="btn btn-sm" style="background:var(--red-bg);color:var(--red)" onclick="eliminarMovimiento(${m.id})">🗑️</button></td>
+    </tr>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function eliminarMovimiento(id) {
+  if (!confirm('¿Eliminar este movimiento?')) return;
+  try {
+    await fetch(`${API}/movimientos/${id}`, { method:'DELETE' });
+    toast('Movimiento eliminado');
+    cargarRecientes();
+  } catch(e) { toast('Error al eliminar','error'); }
+}
+
+// ─── INIT ─────────────────────────────────────────
+(async function init() {
+  // Fecha de hoy por defecto
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('mov-fecha').value = hoy;
+  document.getElementById('fac-fecha').value = hoy;
+  // Mes actual en filtro
+  document.getElementById('filtro-mes').value = hoy.substring(0,7);
+
+  await checkApi();
+  await cargarSelects();
+})();
+</script>
+</body>
+</html>
