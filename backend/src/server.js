@@ -67,5 +67,28 @@ app.post('/api/setup', async (req, res) => {
   });
 });
 
+async function initDB() {
+  const schemaPath = path.join(__dirname, '..', 'schema.sql');
+  const sql = fs.readFileSync(schemaPath, 'utf8');
+  const sentencias = sql
+    .split(';')
+    .map(s => s.split('\n').filter(l => !l.trim().startsWith('--')).join('\n').trim())
+    .filter(s => s.length > 0);
+
+  let ok = 0, err = 0;
+  for (const s of sentencias) {
+    try { await db.query(s); ok++; } catch (e) {
+      if (!e.message.includes('already exists') && !e.message.includes('duplicate')) {
+        console.error('SQL error:', e.message.substring(0, 80));
+        err++;
+      } else { ok++; }
+    }
+  }
+  console.log(`Base de datos inicializada: ${ok} OK, ${err} errores`);
+}
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT, async () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+  await initDB();
+});
