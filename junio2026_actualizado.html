@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis Junio 2026 — Amuebla Tu Hogar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  :root {
+    --bg:#f7f5f0;--bg2:#edeae3;--white:#fff;
+    --text:#1c1a18;--text2:#6b6860;--text3:#a09e9a;
+    --green:#1a6b47;--green-bg:#e8f5ee;--green-light:#d1edd9;
+    --red:#b83232;--red-bg:#fdf0f0;--red-light:#f9d5d5;
+    --amber:#a05c10;--amber-bg:#fef8ec;--amber-light:#fde8c0;
+    --blue:#1a4fa0;--blue-bg:#eef4ff;--blue-light:#ccddf9;
+    --purple:#6635b8;--purple-bg:#f4eeff;--purple-light:#dccffa;
+    --border:rgba(0,0,0,0.07);--shadow:0 1px 8px rgba(0,0,0,0.08);
+    --r:14px;--r-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+  .header{background:var(--text);color:#fff;padding:22px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .header h1{font-size:19px;font-weight:500}
+  .header p{font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px}
+  .badge-new{background:#2ecc71;color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:.05em}
+  .badge-upd{background:#f39c12;color:#fff;font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:.05em}
+  .nav{display:flex;gap:4px;padding:14px 32px;background:var(--white);border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .nav-btn{padding:8px 16px;border-radius:100px;border:1.5px solid var(--border);background:transparent;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s}
+  .nav-btn:hover{background:var(--bg2);color:var(--text)}
+  .nav-btn.active{background:var(--text);border-color:var(--text);color:#fff}
+  .content{max-width:1100px;margin:0 auto;padding:28px 24px}
+  .page{display:none}.page.active{display:block}
+  .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:12px;margin-top:24px}
+  .section-label:first-child{margin-top:0}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:8px}
+  .metric{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:18px 20px}
+  .metric .lbl{font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  .metric .val{font-size:25px;font-weight:500;font-family:'DM Mono',monospace;line-height:1}
+  .metric .sub{font-size:12px;color:var(--text2);margin-top:6px}
+  .val-green{color:var(--green)}.val-red{color:var(--red)}.val-amber{color:var(--amber)}.val-blue{color:var(--blue)}.val-purple{color:var(--purple)}
+  .card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:22px 24px;margin-bottom:16px}
+  .card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);border-bottom:1px solid var(--border)}
+  .tbl td{padding:9px 12px;border-bottom:1px solid var(--border)}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl tr:hover td{background:var(--bg)}
+  .tbl .mono{font-family:'DM Mono',monospace;text-align:right}
+  .tbl .pos{color:var(--green)}.tbl .neg{color:var(--red)}.tbl .amberx{color:var(--amber)}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .bar-lbl{font-size:12px;color:var(--text2);min-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-track{flex:1;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+  .bar-val{font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);min-width:85px;text-align:right}
+  .alert{display:flex;gap:12px;border-radius:var(--r-sm);padding:13px 16px;margin-bottom:10px;align-items:flex-start}
+  .alert-r{background:var(--red-bg);border:1px solid var(--red-light)}
+  .alert-a{background:var(--amber-bg);border:1px solid var(--amber-light)}
+  .alert-g{background:var(--green-bg);border:1px solid var(--green-light)}
+  .alert-b{background:var(--blue-bg);border:1px solid var(--blue-light)}
+  .alert-p{background:var(--purple-bg);border:1px solid var(--purple-light)}
+  .alert-icon{font-size:17px;flex-shrink:0;margin-top:1px}
+  .alert-text{font-size:13px;line-height:1.6}
+  .alert-text strong{display:block;font-weight:600;margin-bottom:2px}
+  .alert-r .alert-text{color:var(--red)}.alert-a .alert-text{color:var(--amber)}
+  .alert-g .alert-text{color:var(--green)}.alert-b .alert-text{color:var(--blue)}.alert-p .alert-text{color:var(--purple)}
+  .day-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:4px}
+  .day-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px}
+  .day-card .day-name{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+  .day-card .day-ing{font-size:14px;font-weight:500;color:var(--green);font-family:'DM Mono',monospace}
+  .day-card .day-gas{font-size:12px;color:var(--red);font-family:'DM Mono',monospace;margin-top:3px}
+  .day-card .day-gio{font-size:11px;color:var(--purple);margin-top:6px;border-top:1px solid var(--border);padding-top:6px}
+  .day-card.new-day{border-color:var(--amber);border-width:2px;position:relative}
+  .day-card.new-day::after{content:"NUEVO";position:absolute;top:-8px;right:8px;background:var(--amber);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.05em}
+  .gio-header{background:linear-gradient(135deg,#2d1b69 0%,#4a2b9e 100%);border-radius:var(--r);padding:24px;color:#fff;margin-bottom:16px}
+  .gio-header h2{font-size:18px;font-weight:500;margin-bottom:4px}
+  .gio-header p{font-size:13px;color:rgba(255,255,255,.6)}
+  .gio-total{font-size:36px;font-weight:500;font-family:'DM Mono',monospace;color:#e8d5ff;margin-top:12px}
+  .gio-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px}
+  .gio-day-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+  .gio-day{background:var(--purple-bg);border:1px solid var(--purple-light);border-radius:var(--r-sm);padding:14px;text-align:center}
+  .gio-day .gd-name{font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;margin-bottom:6px}
+  .gio-day .gd-val{font-size:16px;font-weight:500;font-family:'DM Mono',monospace;color:var(--purple)}
+  .gio-day .gd-items{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.5}
+  .gio-day.new-gio{border-color:var(--amber);border-width:2px;position:relative}
+  .gio-day.new-gio::after{content:"NUEVO";position:absolute;top:-8px;right:4px;background:var(--amber);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+  .chart-wrap{position:relative;width:100%}
+  .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:100px;font-size:11px;font-weight:600}
+  .b-green{background:var(--green-bg);color:var(--green)}.b-red{background:var(--red-bg);color:var(--red)}
+  .b-amber{background:var(--amber-bg);color:var(--amber)}.b-purple{background:var(--purple-bg);color:var(--purple)}.b-blue{background:var(--blue-bg);color:var(--blue)}
+  .sep{height:1px;background:var(--border);margin:16px 0}
+  @media(max-width:700px){
+    .header{padding:18px 20px}.nav{padding:12px 16px}.content{padding:20px 16px}
+    .grid2{grid-template-columns:1fr}.day-grid,.gio-day-grid{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Amuebla Tu Hogar — Análisis Junio 2026</h1>
+    <p>6 días registrados · 01 al 06 de junio · Caja + Bancolombia · Actualizado con nuevos datos</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <span class="badge-new">EN CURSO</span>
+    <span class="badge-upd">⟳ ACTUALIZADO 06/Jun</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('resumen',this)">📊 Resumen</button>
+  <button class="nav-btn" onclick="show('diario',this)">📅 Día a día</button>
+  <button class="nav-btn" onclick="show('giovanny',this)">👤 Giovanny</button>
+  <button class="nav-btn" onclick="show('cartera',this)">💼 Cartera</button>
+  <button class="nav-btn" onclick="show('nomina',this)">👥 Nómina</button>
+  <button class="nav-btn" onclick="show('dian',this)">🧾 Facturas DIAN</button>
+  <button class="nav-btn" onclick="show('proyectos',this)">🏗️ Proyectos</button>
+</nav>
+
+<div class="content">
+
+<!-- ===== RESUMEN ===== -->
+<div class="page active" id="page-resumen">
+  <p class="section-label">Resumen general — 6 días (01 al 06 de junio)</p>
+  <div class="metrics">
+    <div class="metric">
+      <div class="lbl">Ingresos totales</div>
+      <div class="val val-green">$5.78M</div>
+      <div class="sub">Caja + Bancolombia</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Egresos totales</div>
+      <div class="val val-red">$5.17M</div>
+      <div class="sub">Costos + Gastos</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Saldo disponible</div>
+      <div class="val val-green">$607K</div>
+      <div class="sub">Diferencia neta</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Cta. Giovanny</div>
+      <div class="val val-purple">$422K</div>
+      <div class="sub">6 días acumulado</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Cartera clientes</div>
+      <div class="val val-amber">$8.36M</div>
+      <div class="sub">4 proyectos activos</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Nómina semana</div>
+      <div class="val" style="color:var(--text)">$805K</div>
+      <div class="sub">3 empleados</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-title">💰 Ingresos vs Egresos por día</div>
+      <div class="chart-wrap" style="height:230px">
+        <canvas id="cBarDia"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🍩 Composición de egresos</div>
+      <div class="chart-wrap" style="height:230px">
+        <canvas id="cPieEgr"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 Tendencia acumulada del período</div>
+    <div class="chart-wrap" style="height:180px">
+      <canvas id="cLinea"></canvas>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">💳 Ingresos por fuente</div>
+      <div class="bar-row"><div class="bar-lbl">Ingreso Claudia (caja)</div><div class="bar-track"><div class="bar-fill" style="width:48%;background:#1a6b47"></div></div><div class="bar-val">$2,800,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Ingreso Marcela (banco)</div><div class="bar-track"><div class="bar-fill" style="width:36%;background:#2e9e6e"></div></div><div class="bar-val">$2,100,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Ingreso Oswaldo (caja)</div><div class="bar-track"><div class="bar-fill" style="width:10%;background:#3dbf82"></div></div><div class="bar-val">$600,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Préstamos + otros (caja)</div><div class="bar-track"><div class="bar-fill" style="width:4%;background:#a8dfc0"></div></div><div class="bar-val">$149,500</div></div>
+      <div class="bar-row"><div class="bar-lbl">Wendy Rueda (banco)</div><div class="bar-track"><div class="bar-fill" style="width:1%;background:#c5eddc"></div></div><div class="bar-val">$30,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Bancarios + varios</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:#e0f5eb"></div></div><div class="bar-val">$18</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📤 Principales egresos</div>
+      <div class="bar-row"><div class="bar-lbl">Nómina (06/06)</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:#c0392b"></div></div><div class="bar-val">$805,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Pago Maibeline</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:#d04030"></div></div><div class="bar-val">$811,500</div></div>
+      <div class="bar-row"><div class="bar-lbl">Costo Marcela (banco)</div><div class="bar-track"><div class="bar-fill" style="width:54%;background:#e05d4e"></div></div><div class="bar-val">$738,300</div></div>
+      <div class="bar-row"><div class="bar-lbl">Cta. Giovanny</div><div class="bar-track"><div class="bar-fill" style="width:29%;background:#9b59b6"></div></div><div class="bar-val">$421,600</div></div>
+      <div class="bar-row"><div class="bar-lbl">Costo Yair (Madefront)</div><div class="bar-track"><div class="bar-fill" style="width:27%;background:#e87968"></div></div><div class="bar-val">$393,690</div></div>
+      <div class="bar-row"><div class="bar-lbl">Costo Oswaldo (06/06)</div><div class="bar-track"><div class="bar-fill" style="width:16%;background:#e8a09a"></div></div><div class="bar-val">$231,500</div></div>
+      <div class="bar-row"><div class="bar-lbl">Gastos Claudia</div><div class="bar-track"><div class="bar-fill" style="width:16%;background:#f0b0aa"></div></div><div class="bar-val">$209,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Gastos moto Pulsar</div><div class="bar-track"><div class="bar-fill" style="width:18%;background:#f5c0bb"></div></div><div class="bar-val">$260,000</div></div>
+    </div>
+  </div>
+
+  <div class="alert alert-a">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text"><strong>El día 06 fue el de mayor egreso ($1.85M)</strong>Nómina ($805K) + honorarios Marlon ($200K entre caja y banco) + luz casa/taller ($350K) + costo Oswaldo ($231.5K) + Giovanny banco ($43.6K). El ingreso fue solo $605K, generando un déficit diario de -$1.24M.</div>
+  </div>
+  <div class="alert alert-p">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text"><strong>Giovanny acumula $421,600 en 6 días</strong>Proyección mensual: ~$2.1M. Creció vs los $328K de los primeros 5 días. El día 1 fue el más alto con $104,700 (caja + banco).</div>
+  </div>
+  <div class="alert alert-g">
+    <div class="alert-icon">✅</div>
+    <div class="alert-text"><strong>Tres proyectos con flujo activo</strong>Keidy, Oswaldo y Marcela generaron abonos e ingresos. El proyecto Oswaldo tiene utilidad proyectada de $2.97M y el de Marcela de $3.46M.</div>
+  </div>
+</div>
+
+<!-- ===== DÍA A DÍA ===== -->
+<div class="page" id="page-diario">
+  <p class="section-label">Resumen por día — Caja efectivo</p>
+  <div class="day-grid">
+    <div class="day-card"><div class="day-name">Lun 01/Jun</div><div class="day-ing">+$112,000</div><div class="day-gas">-$77,000</div><div class="day-gio">👤 Gio: $104,700</div></div>
+    <div class="day-card"><div class="day-name">Mar 02/Jun</div><div class="day-ing" style="color:var(--text3)">$0</div><div class="day-gas">-$24,000</div><div class="day-gio">👤 Gio: $47,400</div></div>
+    <div class="day-card"><div class="day-name">Mié 03/Jun</div><div class="day-ing">+$124,000</div><div class="day-gas">-$114,000</div><div class="day-gio">👤 Gio: $83,300</div></div>
+    <div class="day-card"><div class="day-name">Jue 04/Jun</div><div class="day-ing">+$2,806,500</div><div class="day-gas">-$864,600</div><div class="day-gio">👤 Gio: $41,900</div></div>
+    <div class="day-card"><div class="day-name">Vie 05/Jun</div><div class="day-ing" style="color:var(--text3)">$0</div><div class="day-gas">-$65,100</div><div class="day-gio">👤 Gio: $100,700</div></div>
+    <div class="day-card new-day"><div class="day-name">Sáb 06/Jun</div><div class="day-ing">+$605,000</div><div class="day-gas">-$1,244,300</div><div class="day-gio">👤 Gio: $43,600</div></div>
+  </div>
+
+  <p class="section-label" style="margin-top:20px">Detalle completo de transacciones por día</p>
+
+  <div class="card">
+    <div class="card-title">📋 Lunes 01 de junio</div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Entrada</th><th style="text-align:right">Salida</th></tr></thead>
+      <tbody>
+        <tr><td>Cuenta por pagar</td><td>Prestaron</td><td>Caja</td><td class="mono pos">$112,000</td><td class="mono">—</td></tr>
+        <tr><td>Costo Claudia</td><td>Mundo Cortes</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$8,500</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Gaseosas</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$15,000</td></tr>
+        <tr><td>Costo Claudia</td><td>Canto flexible</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$13,500</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Lavadora</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$10,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Talco</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$15,000</td></tr>
+        <tr><td>Gastos perros</td><td>Purina</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$3,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Hayacas</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$12,000</td></tr>
+        <tr><td>Costo Claudia (banco)</td><td>Material platera</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$91,000</td></tr>
+        <tr><td>Costo Yair (banco)</td><td>Madefront FE-182508</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$393,690</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$52,700</td></tr>
+        <tr><td>Gastos Claudia (banco)</td><td>Indrive + transporte</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$87,000</td></tr>
+        <tr><td>Gastos bancarios</td><td>4x1000</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$2,498</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Martes 02 de junio</div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Entrada</th><th style="text-align:right">Salida</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Gaseosas</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$15,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Diferencia</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$9,000</td></tr>
+        <tr><td>Cuenta por cobrar (banco)</td><td>Transporte</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$30,000</td></tr>
+        <tr><td>Gastos bancarios</td><td>TC Master Pesos</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$50,952</td></tr>
+        <tr><td>Gastos bancarios</td><td>4x1000</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$905</td></tr>
+        <tr><td>Gastos Claudia (banco)</td><td>Almuerzos</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$48,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$23,400</td></tr>
+        <tr><td>Gastos Claudia (banco)</td><td>Transporte</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$74,000</td></tr>
+        <tr><td>Ingreso bancario</td><td>Intereses ahorros</td><td>Bancolombia</td><td class="mono pos">$3</td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Miércoles 03 de junio</div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Entrada</th><th style="text-align:right">Salida</th></tr></thead>
+      <tbody>
+        <tr><td>Cuenta por pagar</td><td>Préstamo recibido</td><td>Caja</td><td class="mono pos">$32,000</td><td class="mono">—</td></tr>
+        <tr><td>Ingreso pollos</td><td>Blanca</td><td>Caja</td><td class="mono pos">$42,000</td><td class="mono">—</td></tr>
+        <tr><td>Ingreso</td><td>Heidy Navas</td><td>Caja</td><td class="mono pos">$50,000</td><td class="mono">—</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Café</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$2,500</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Papel higiénico</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$2,500</td></tr>
+        <tr><td>Gastos perros</td><td>Purina</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$6,000</td></tr>
+        <tr><td>Gastos taller</td><td>Hueso duro</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$15,000</td></tr>
+        <tr><td>Gastos taller</td><td>Masilla</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$22,000</td></tr>
+        <tr><td>Gastos Claudia</td><td>Almuerzos</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$24,000</td></tr>
+        <tr><td>Costo Claudia</td><td>Cifon</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$4,000</td></tr>
+        <tr><td>Costo Claudia</td><td>Varsol</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$3,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Comida, gaseosa, esperanza</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$35,000</td></tr>
+        <tr><td>Costo Dora (banco)</td><td>Material</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$20,000</td></tr>
+        <tr><td>Costo Marcela (banco)</td><td>Material</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$100,000</td></tr>
+        <tr><td>Costo Claudia (banco)</td><td>Materiales x5</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$23,500</td></tr>
+        <tr><td>Gastos taller (banco)</td><td>Taller</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$15,000</td></tr>
+        <tr><td>Cta. por cobrar Franklin</td><td>Préstamo Franklin</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$20,000</td></tr>
+        <tr><td>Saldo a favor</td><td>Devolución banco</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$20,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>Niko + comida Nequi</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$43,300</td></tr>
+        <tr><td>Gastos bancarios</td><td>4x1000</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$967</td></tr>
+        <tr><td>Ingreso bancario</td><td>Intereses ahorros</td><td>Bancolombia</td><td class="mono pos">$6</td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Jueves 04 de junio ⭐ Día de mayor ingreso</div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Entrada</th><th style="text-align:right">Salida</th></tr></thead>
+      <tbody>
+        <tr><td>Ingreso</td><td>Devolución</td><td>Caja</td><td class="mono pos">$6,500</td><td class="mono">—</td></tr>
+        <tr><td><strong>Ingreso Claudia</strong></td><td>Cobro proyecto</td><td>Caja</td><td class="mono pos" style="font-size:15px">$2,800,000</td><td class="mono">—</td></tr>
+        <tr><td>Gasto</td><td>Gaveta</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$6,500</td></tr>
+        <tr><td>Costo Claudia</td><td>Claudia</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$7,000</td></tr>
+        <tr><td><strong>Gasto</strong></td><td>Pago Maibeline</td><td>Caja</td><td class="mono">—</td><td class="mono neg" style="font-size:15px">$811,500</td></tr>
+        <tr><td>Gastos Dojan</td><td>Dojan</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$15,600</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Comida</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$8,000</td></tr>
+        <tr><td>Gasto perros</td><td>Purina</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$6,000</td></tr>
+        <tr><td>Gasto pollos</td><td>Purina</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$4,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Gaseosa</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$6,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$27,900</td></tr>
+        <tr><td>Gastos Dojan (banco)</td><td>Dojan</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$127,600</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>ARA Tiendas</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$15,600</td></tr>
+        <tr><td>Gastos bancarios</td><td>4x1000</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$684</td></tr>
+        <tr><td>Ingreso bancario</td><td>Intereses ahorros</td><td>Bancolombia</td><td class="mono pos">$5</td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Viernes 05 de junio</div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Entrada</th><th style="text-align:right">Salida</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Jabón</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$32,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Fresas</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$9,000</td></tr>
+        <tr><td>Gasto perros</td><td>Purina</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$5,500</td></tr>
+        <tr><td>Gasto pollos</td><td>Purina x2</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$5,600</td></tr>
+        <tr><td>Gasto</td><td>Purina fina</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$3,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny</td><td>Comida</td><td>Caja</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$10,000</td></tr>
+        <tr><td>Costo Marcela (banco)</td><td>Materiales Grupo Mond</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$61,800</td></tr>
+        <tr><td>Costo Marcela (banco)</td><td>Material Madefront</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$576,500</td></tr>
+        <tr><td>Gastos moto</td><td>Pulsar</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$260,000</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$35,700</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>PC</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$14,000</td></tr>
+        <tr><td>Gastos</td><td>ARL + comisiones</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$64,000</td></tr>
+        <tr><td>Gastos bancarios</td><td>4x1000</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$4,516</td></tr>
+        <tr><td>Gastos perros (banco)</td><td>Purina</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$53,000</td></tr>
+        <tr><td>Gastos pollos (banco)</td><td>Purina</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$50,000</td></tr>
+        <tr><td>Ingreso bancario</td><td>Intereses ahorros</td><td>Bancolombia</td><td class="mono pos">$5</td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="border-color:var(--amber);border-width:2px">
+    <div class="card-title" style="color:var(--amber)">📋 Sábado 06 de junio ⟳ NUEVO</div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Entrada</th><th style="text-align:right">Salida</th></tr></thead>
+      <tbody>
+        <tr><td>Ingreso Oswaldo</td><td>Shirley — abono proyecto</td><td>Caja</td><td class="mono pos">$600,000</td><td class="mono">—</td></tr>
+        <tr><td>Ingreso</td><td>Taller</td><td>Caja</td><td class="mono pos">$5,000</td><td class="mono">—</td></tr>
+        <tr><td>Nómina</td><td>Alejandro</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$200,000</td></tr>
+        <tr><td>Nómina</td><td>Franklin</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$205,000</td></tr>
+        <tr><td>Nómina</td><td>Wilson</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$400,000</td></tr>
+        <tr><td>Honorarios</td><td>Marlon Hernández</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$80,000</td></tr>
+        <tr><td>Gastos luz</td><td>Casa</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$250,000</td></tr>
+        <tr><td>Gastos luz</td><td>Taller</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$100,000</td></tr>
+        <tr><td>Gastos</td><td>Garantía</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$3,000</td></tr>
+        <tr><td>Costo Dora</td><td>Fleje</td><td>Caja</td><td class="mono">—</td><td class="mono neg">$6,300</td></tr>
+        <tr><td>Costo Oswaldo (banco)</td><td>Materiales DECOTRIPLEX</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$231,500</td></tr>
+        <tr><td style="color:var(--purple)">Cta. Giovanny (banco)</td><td>Transferencia</td><td>Bancolombia</td><td class="mono">—</td><td class="mono" style="color:var(--purple)">$28,000</td></tr>
+        <tr><td>Honorarios Marlon (banco)</td><td>Marlon Hernández</td><td>Bancolombia</td><td class="mono">—</td><td class="mono neg">$120,000</td></tr>
+        <tr><td>Wendy Rueda (banco)</td><td>Transferencia Nequi</td><td>Bancolombia</td><td class="mono pos">$30,000</td><td class="mono">—</td></tr>
+        <tr><td>Ingreso bancario</td><td>Intereses ahorros</td><td>Bancolombia</td><td class="mono pos">$5</td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== GIOVANNY ===== -->
+<div class="page" id="page-giovanny">
+  <div class="gio-header">
+    <h2>👤 Cuenta por cobrar — Giovanny</h2>
+    <p>Seguimiento detallado · 6 días · Caja efectivo + Bancolombia/Nequi</p>
+    <div class="gio-total">$421,600</div>
+    <div class="gio-sub">+$93,300 vs reporte anterior (5 días = $328,300)</div>
+  </div>
+
+  <p class="section-label">Total por día</p>
+  <div class="gio-day-grid">
+    <div class="gio-day"><div class="gd-name">01 Jun</div><div class="gd-val">$104,700</div><div class="gd-items">Caja $52K<br>Banco $52.7K<br>Gaseosas, lavadora, talco, hayacas, comida</div></div>
+    <div class="gio-day"><div class="gd-name">02 Jun</div><div class="gd-val">$47,400</div><div class="gd-items">Caja $24K<br>Banco $23.4K<br>Gaseosas, diferencia, comida</div></div>
+    <div class="gio-day"><div class="gd-name">03 Jun</div><div class="gd-val">$83,300</div><div class="gd-items">Caja $40K<br>Banco $43.3K<br>Café, papel, comida, gaseosa, Niko</div></div>
+    <div class="gio-day"><div class="gd-name">04 Jun</div><div class="gd-val">$41,900</div><div class="gd-items">Caja $14K<br>Banco $27.9K<br>Comida, gaseosa, ARA tiendas</div></div>
+    <div class="gio-day"><div class="gd-name">05 Jun</div><div class="gd-val">$100,700</div><div class="gd-items">Caja $51K<br>Banco $49.7K<br>Jabón, fresas, comida, PC</div></div>
+    <div class="gio-day new-gio"><div class="gd-name">06 Jun</div><div class="gd-val">$43,600</div><div class="gd-items">Caja $0<br>Banco $43.6K<br>Transferencia + ARA</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="color:var(--purple)">📊 Evolución diaria — Cuenta Giovanny</div>
+    <div class="chart-wrap" style="height:220px">
+      <canvas id="cGioBar"></canvas>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title" style="color:var(--purple)">🍩 Por medio de pago</div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="cGioPie"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--purple)">📋 Categorías de gasto</div>
+      <div class="bar-row"><div class="bar-lbl">Comida / almuerzos</div><div class="bar-track"><div class="bar-fill" style="width:65%;background:#6635b8"></div></div><div class="bar-val">~$185,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Artículos del hogar</div><div class="bar-track"><div class="bar-fill" style="width:30%;background:#9b6be0"></div></div><div class="bar-val">~$57,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Bebidas (gaseosas)</div><div class="bar-track"><div class="bar-fill" style="width:24%;background:#b990f0"></div></div><div class="bar-val">~$60,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Tecnología (PC)</div><div class="bar-track"><div class="bar-fill" style="width:6%;background:#d4baf9"></div></div><div class="bar-val">$14,000</div></div>
+      <div class="bar-row"><div class="bar-lbl">Supermercado (ARA)</div><div class="bar-track"><div class="bar-fill" style="width:8%;background:#c4a0f8"></div></div><div class="bar-val">$43,600</div></div>
+      <div class="bar-row"><div class="bar-lbl">Otros varios</div><div class="bar-track"><div class="bar-fill" style="width:25%;background:#ead5ff"></div></div><div class="bar-val">~$62,000</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="color:var(--purple)">📄 Registro completo</div>
+    <table class="tbl">
+      <thead><tr><th>Fecha</th><th>Descripción</th><th>Medio</th><th style="text-align:right">Monto</th></tr></thead>
+      <tbody>
+        <tr><td>01/06</td><td>Gaseosas</td><td>Caja</td><td class="mono amberx">$15,000</td></tr>
+        <tr><td>01/06</td><td>Lavadora</td><td>Caja</td><td class="mono amberx">$10,000</td></tr>
+        <tr><td>01/06</td><td>Talco</td><td>Caja</td><td class="mono amberx">$15,000</td></tr>
+        <tr><td>01/06</td><td>Hayacas</td><td>Caja</td><td class="mono amberx">$12,000</td></tr>
+        <tr><td>01/06</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono amberx">$52,700</td></tr>
+        <tr><td>02/06</td><td>Gaseosas</td><td>Caja</td><td class="mono amberx">$15,000</td></tr>
+        <tr><td>02/06</td><td>Diferencia</td><td>Caja</td><td class="mono amberx">$9,000</td></tr>
+        <tr><td>02/06</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono amberx">$23,400</td></tr>
+        <tr><td>03/06</td><td>Café</td><td>Caja</td><td class="mono amberx">$2,500</td></tr>
+        <tr><td>03/06</td><td>Papel higiénico</td><td>Caja</td><td class="mono amberx">$2,500</td></tr>
+        <tr><td>03/06</td><td>Comida, gaseosa, esperanza</td><td>Caja</td><td class="mono amberx">$35,000</td></tr>
+        <tr><td>03/06</td><td>Niko + comida Nequi</td><td>Bancolombia</td><td class="mono amberx">$43,300</td></tr>
+        <tr><td>04/06</td><td>Comida</td><td>Caja</td><td class="mono amberx">$8,000</td></tr>
+        <tr><td>04/06</td><td>Gaseosa</td><td>Caja</td><td class="mono amberx">$6,000</td></tr>
+        <tr><td>04/06</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono amberx">$27,900</td></tr>
+        <tr><td>04/06</td><td>ARA Tiendas</td><td>Bancolombia</td><td class="mono amberx">$15,600</td></tr>
+        <tr><td>05/06</td><td>Jabón</td><td>Caja</td><td class="mono amberx">$32,000</td></tr>
+        <tr><td>05/06</td><td>Fresas</td><td>Caja</td><td class="mono amberx">$9,000</td></tr>
+        <tr><td>05/06</td><td>Comida</td><td>Caja</td><td class="mono amberx">$10,000</td></tr>
+        <tr><td>05/06</td><td>Comida Nequi</td><td>Bancolombia</td><td class="mono amberx">$35,700</td></tr>
+        <tr><td>05/06</td><td>PC</td><td>Bancolombia</td><td class="mono amberx">$14,000</td></tr>
+        <tr style="background:var(--amber-bg)"><td>06/06</td><td>Transferencia (banco)</td><td>Bancolombia</td><td class="mono amberx">$28,000</td></tr>
+        <tr style="background:var(--amber-bg)"><td>06/06</td><td>ARA Tiendas</td><td>Bancolombia</td><td class="mono amberx">$15,600</td></tr>
+        <tr style="font-weight:600;background:var(--purple-bg)"><td colspan="3" style="color:var(--purple)"><strong>TOTAL ACUMULADO (6 días)</strong></td><td class="mono" style="color:var(--purple);font-size:16px"><strong>$421,600</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-p">
+    <div class="alert-icon">📊</div>
+    <div class="alert-text"><strong>Proyección mensual: ~$2,108,000</strong>Al ritmo de $421,600 en 6 días = $70,267/día. El mes cerraría con aproximadamente $2.1M en gastos a nombre de Giovanny.</div>
+  </div>
+  <div class="alert alert-a">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text"><strong>¿Gastos personales o empresariales?</strong>Conceptos como fresas, jabón, gaseosas, talco, lavadora, papel higiénico y ARA Tiendas son gastos del hogar. Deben separarse para evitar problemas con la DIAN.</div>
+  </div>
+</div>
+
+<!-- ===== CARTERA ===== -->
+<div class="page" id="page-cartera">
+  <p class="section-label">Cartera de proyectos activos — actualizada</p>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Cartera clientes</div><div class="val val-amber">$8.36M</div><div class="sub">4 proyectos + finalizados</div></div>
+    <div class="metric"><div class="lbl">Cuentas por pagar</div><div class="val val-red">$2.26M</div><div class="sub">Magaly + Herrajes</div></div>
+    <div class="metric"><div class="lbl">Cartera pollos</div><div class="val" style="color:var(--text)">$126K</div><div class="sub">Nubia + Deiwys</div></div>
+    <div class="metric"><div class="lbl">Cta. cobrar Franklin</div><div class="val val-amber">$75K</div><div class="sub">Préstamo empleado</div></div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-title">🏗️ Estado de proyectos</div>
+      <table class="tbl">
+        <thead><tr><th>Cliente</th><th>Estado</th><th style="text-align:right">Saldo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Samuel Aragón</strong></td><td><span class="badge b-amber">En proceso</span></td><td class="mono amberx" style="text-align:right">$3,500,000</td></tr>
+          <tr><td><strong>Oswaldo Duarte</strong></td><td><span class="badge b-amber">En proceso</span></td><td class="mono amberx" style="text-align:right">$1,600,000</td></tr>
+          <tr><td><strong>Keidy Nicolay</strong></td><td><span class="badge b-amber">En proceso</span></td><td class="mono amberx" style="text-align:right">$280,000</td></tr>
+          <tr style="background:var(--amber-bg)"><td><strong>Marcela</strong> ⟳</td><td><span class="badge b-amber">En proceso</span></td><td class="mono amberx" style="text-align:right">$2,100,000</td></tr>
+          <tr><td>Oscar Saga (obra)</td><td><span class="badge b-green">Finalizado</span></td><td class="mono pos" style="text-align:right">$509,190</td></tr>
+          <tr><td>Oscar Saga (mano obra)</td><td><span class="badge b-green">Finalizado</span></td><td class="mono pos" style="text-align:right">$200,000</td></tr>
+          <tr><td>Stefanny</td><td><span class="badge b-green">Finalizado</span></td><td class="mono pos" style="text-align:right">$100,000</td></tr>
+          <tr><td>Franklin (pendiente)</td><td><span class="badge b-red">Pendiente</span></td><td class="mono amberx" style="text-align:right">$75,000</td></tr>
+          <tr style="font-weight:600"><td colspan="2">Total cartera</td><td class="mono amberx" style="text-align:right">$8,364,190</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">📤 Cuentas por pagar</div>
+        <table class="tbl">
+          <thead><tr><th>Acreedor</th><th style="text-align:right">Monto</th></tr></thead>
+          <tbody>
+            <tr><td>Magaly</td><td class="mono neg" style="text-align:right">$1,000,000</td></tr>
+            <tr><td>Herrajes Sebastián</td><td class="mono neg" style="text-align:right">$1,259,000</td></tr>
+            <tr style="font-weight:600"><td>Total por pagar</td><td class="mono neg" style="text-align:right">$2,259,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">🐔 Cartera pollos</div>
+        <table class="tbl">
+          <thead><tr><th>Cliente</th><th style="text-align:right">Saldo</th></tr></thead>
+          <tbody>
+            <tr><td>Nubia</td><td class="mono amberx" style="text-align:right">$49,000</td></tr>
+            <tr><td>Deiwys</td><td class="mono amberx" style="text-align:right">$77,000</td></tr>
+            <tr style="font-weight:600"><td>Total</td><td class="mono amberx" style="text-align:right">$126,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-a">
+    <div class="alert-icon">⟳</div>
+    <div class="alert-text"><strong>Nuevo proyecto: Marcela ($4.2M total)</strong>Abono recibido de $2.1M (banco). Saldo pendiente: $2.1M. Costos registrados hasta el 05/06: $738,300. Utilidad proyectada: $3,461,700.</div>
+  </div>
+  <div class="alert alert-b">
+    <div class="alert-icon">ℹ️</div>
+    <div class="alert-text"><strong>Oswaldo actualizado</strong>Abono de $1.6M recibido. Costo Decotriplex ($231,500) registrado el 06/06. Saldo pendiente: $1.6M. Utilidad proyectada si se cobra: $2,968,500.</div>
+  </div>
+</div>
+
+<!-- ===== NÓMINA ===== -->
+<div class="page" id="page-nomina">
+  <p class="section-label">Nómina semana del 01 al 06 de junio 2026 — Pagada el sábado 06/Jun</p>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Total nómina</div><div class="val" style="color:var(--text)">$805,000</div><div class="sub">3 empleados</div></div>
+    <div class="metric"><div class="lbl">Descuentos</div><div class="val val-red">$95,000</div><div class="sub">Franklin (préstamos)</div></div>
+    <div class="metric"><div class="lbl">Honorarios Marlon</div><div class="val val-amber">$200,000</div><div class="sub">Caja $80K + Banco $120K</div></div>
+    <div class="metric"><div class="lbl">Total erogado personal</div><div class="val val-red">$1,005,000</div><div class="sub">Nómina + Honorarios</div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">👥 Detalle nómina</div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Nombre</th><th>Sueldo base</th><th>Días</th><th>Bruto</th><th>Descuentos</th><th style="text-align:right">A pagar</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Alejandro</td><td class="mono">$200,000</td><td>6</td><td class="mono">$200,000</td><td class="mono">$0</td><td class="mono pos">$200,000</td></tr>
+        <tr><td>4</td><td>Franklin</td><td class="mono">$300,000</td><td>6</td><td class="mono">$300,000</td><td class="mono neg">$95,000</td><td class="mono pos">$205,000</td></tr>
+        <tr><td>5</td><td>Wilson</td><td class="mono">$400,000</td><td>6</td><td class="mono">$400,000</td><td class="mono">$0</td><td class="mono pos">$400,000</td></tr>
+        <tr><td colspan="2">Honorarios Marlon Hernández</td><td class="mono"></td><td></td><td class="mono">$200,000</td><td class="mono">$0</td><td class="mono amberx">$200,000</td></tr>
+        <tr style="font-weight:600"><td colspan="4">TOTAL</td><td class="mono">$1,100,000</td><td class="mono neg">$95,000</td><td class="mono pos">$1,005,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">💵 Préstamos Franklin (descontados de nómina)</div>
+    <table class="tbl">
+      <thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody>
+        <tr><td>31/05/2026</td><td>Préstamo Franklin</td><td class="mono amberx">$20,000</td></tr>
+        <tr><td>31/05/2026</td><td>Préstamo Franklin</td><td class="mono amberx">$55,000</td></tr>
+        <tr><td>03/06/2026</td><td>Préstamo Franklin (banco)</td><td class="mono amberx">$20,000</td></tr>
+        <tr style="font-weight:600"><td colspan="2">Total descontado de nómina</td><td class="mono neg">$95,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-b">
+    <div class="alert-icon">ℹ️</div>
+    <div class="alert-text"><strong>Gastos fijos pendientes de registrar</strong>La hoja "Cuenta por Cobrar" del Excel lista gastos fijos aún sin valor: Luz, Agua, Celular Claro, Gas Casa, Internet, Arriendo, Gas Taller. Se registraron la luz casa ($250K) y taller ($100K) el 06/06.</div>
+  </div>
+</div>
+
+<!-- ===== DIAN ===== -->
+<div class="page" id="page-dian">
+  <p class="section-label">Facturas electrónicas recibidas — DIAN</p>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Facturas recibidas</div><div class="val" style="color:var(--text)">13</div><div class="sub">1 nota crédito + 12 facturas</div></div>
+    <div class="metric"><div class="lbl">Total facturado</div><div class="val val-red">$3.75M</div><div class="sub">01 al 06 de junio</div></div>
+    <div class="metric"><div class="lbl">IVA total</div><div class="val" style="color:var(--text)">$753K</div><div class="sub">Deducible</div></div>
+    <div class="metric"><div class="lbl">Nota crédito</div><div class="val val-amber">$1.71M</div><div class="sub">Madefront C00711769</div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">🧾 Facturas y documentos electrónicos</div>
+    <table class="tbl">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Proveedor</th><th>Folio</th><th>Forma Pago</th><th style="text-align:right">IVA</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--amber-bg)"><td>06/06</td><td><span class="badge b-red">Nota Crédito</span></td><td>MADEFRONT COLOMBIA SAS</td><td>C00711769</td><td>Crédito</td><td class="mono">$272,257</td><td class="mono amberx">$1,705,190</td></tr>
+        <tr style="background:var(--amber-bg)"><td>06/06</td><td><span class="badge b-green">Factura</span></td><td>DECOTRIPLEX S.A.S.</td><td>DEC-310699</td><td>Contado</td><td class="mono">$36,962</td><td class="mono neg">$231,500</td></tr>
+        <tr style="background:var(--amber-bg)"><td>06/06</td><td><span class="badge b-green">Factura</span></td><td>MADEFRONT COLOMBIA SAS</td><td>FE-183167</td><td>Crédito</td><td class="mono">$139,945</td><td class="mono neg">$876,500</td></tr>
+        <tr><td>05/06</td><td><span class="badge b-green">Factura</span></td><td>MADEFRONT COLOMBIA SAS</td><td>FE-183103</td><td>Crédito</td><td class="mono">$272,257</td><td class="mono neg">$1,705,190</td></tr>
+        <tr><td>05/06</td><td><span class="badge b-green">Factura</span></td><td>GRUPO MONDRAGON</td><td>GMFE-195833</td><td>Contado</td><td class="mono">$20,086</td><td class="mono neg">$125,800</td></tr>
+        <tr><td>05/06</td><td><span class="badge b-green">Factura</span></td><td>CARMEN LUCIA VEGA MENDEZ</td><td>DHSE-6171</td><td>Contado</td><td class="mono">$0</td><td class="mono neg">$14,000</td></tr>
+        <tr><td>04/06</td><td><span class="badge b-green">Factura</span></td><td>GRUPO MONDRAGON</td><td>GMFE-195602</td><td>Contado</td><td class="mono">$20,373</td><td class="mono neg">$127,600</td></tr>
+        <tr><td>03/06</td><td><span class="badge b-green">Factura</span></td><td>MADEFRONT COLOMBIA SAS</td><td>FE-182866</td><td>Contado</td><td class="mono">$128</td><td class="mono neg">$800</td></tr>
+        <tr><td>03/06</td><td><span class="badge b-green">Factura</span></td><td>CARMEN LUCIA VEGA MENDEZ</td><td>DHSE-6150</td><td>Contado</td><td class="mono">$0</td><td class="mono neg">$178,500</td></tr>
+        <tr><td>01/06</td><td><span class="badge b-green">Factura</span></td><td>KEVIN ANDRES CACERES GARCIA</td><td>KCG-27071</td><td>Contado</td><td class="mono">$1,357</td><td class="mono neg">$8,500</td></tr>
+        <tr><td>01/06</td><td><span class="badge b-green">Factura</span></td><td>CARMEN LUCIA VEGA MENDEZ</td><td>DHSE-6131</td><td>Contado</td><td class="mono">$0</td><td class="mono neg">$50,000</td></tr>
+        <tr><td>01/06</td><td><span class="badge b-green">Factura</span></td><td>MADEFRONT COLOMBIA SAS</td><td>FE-182508</td><td>Crédito</td><td class="mono">$62,858</td><td class="mono neg">$393,690</td></tr>
+        <tr><td>01/06</td><td><span class="badge b-green">Factura</span></td><td>CARMEN LUCIA VEGA MENDEZ</td><td>DHSE-6128</td><td>Contado</td><td class="mono">$0</td><td class="mono neg">$41,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-a">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text"><strong>Nota crédito Madefront por $1.7M el 06/06</strong>Se emitió una nota crédito (C00711769) el mismo día de una factura (FE-183103) por el mismo valor. Verificar si es una devolución o corrección de la factura del 05/06.</div>
+  </div>
+  <div class="alert alert-b">
+    <div class="alert-icon">ℹ️</div>
+    <div class="alert-text"><strong>Proveedores frecuentes identificados</strong>MADEFRONT COLOMBIA SAS (7 documentos, materiales), GRUPO MONDRAGON (2 documentos, pinturas/insumos) y CARMEN LUCIA VEGA MENDEZ (3 documentos, servicios). Conserve todas estas facturas para declaración de renta como costos deducibles.</div>
+  </div>
+</div>
+
+<!-- ===== PROYECTOS ===== -->
+<div class="page" id="page-proyectos">
+  <p class="section-label">Rentabilidad por proyecto — datos actualizados</p>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Proyectos activos</div><div class="val" style="color:var(--text)">3</div><div class="sub">Keidy, Oswaldo, Marcela</div></div>
+    <div class="metric"><div class="lbl">Utilidad total proyectada</div><div class="val val-green">$10.1M</div><div class="sub">Si se cobran todos</div></div>
+    <div class="metric"><div class="lbl">Costos registrados</div><div class="val val-red">$1.36M</div><div class="sub">Keidy+Oswaldo+Marcela</div></div>
+    <div class="metric"><div class="lbl">Saldo por cobrar</div><div class="val val-amber">$5.98M</div><div class="sub">Keidy+Oswaldo+Marcela</div></div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-title">🪑 Proyecto Keidy Nicolay</div>
+      <div class="metrics" style="margin-bottom:0;grid-template-columns:1fr 1fr">
+        <div class="metric"><div class="lbl">Valor total</div><div class="val" style="color:var(--text);font-size:18px">$580,000</div></div>
+        <div class="metric"><div class="lbl">Abono recibido</div><div class="val val-green" style="font-size:18px">$300,000</div></div>
+        <div class="metric"><div class="lbl">Saldo pendiente</div><div class="val val-amber" style="font-size:18px">$280,000</div></div>
+        <div class="metric"><div class="lbl">Costo Madefront</div><div class="val val-red" style="font-size:18px">$393,690</div></div>
+        <div class="metric"><div class="lbl">Utilidad c/cobro</div><div class="val val-green" style="font-size:18px">$186,310</div></div>
+        <div class="metric"><div class="lbl">Sin cobrar saldo</div><div class="val val-red" style="font-size:18px">-$93,690</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:var(--amber);border-width:2px;position:relative">
+      <div style="position:absolute;top:-10px;right:12px;background:var(--amber);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px">ACTUALIZADO</div>
+      <div class="card-title">🛠️ Proyecto Oswaldo Duarte</div>
+      <div class="metrics" style="margin-bottom:0;grid-template-columns:1fr 1fr">
+        <div class="metric"><div class="lbl">Valor total</div><div class="val" style="color:var(--text);font-size:18px">$3,200,000</div></div>
+        <div class="metric"><div class="lbl">Abono recibido</div><div class="val val-green" style="font-size:18px">$1,600,000</div></div>
+        <div class="metric"><div class="lbl">Saldo pendiente</div><div class="val val-amber" style="font-size:18px">$1,600,000</div></div>
+        <div class="metric"><div class="lbl">Costo materiales</div><div class="val val-red" style="font-size:18px">$231,500</div></div>
+        <div class="metric"><div class="lbl">Utilidad proy.</div><div class="val val-green" style="font-size:18px">$2,968,500</div></div>
+        <div class="metric"><div class="lbl">Margen</div><div class="val val-green" style="font-size:18px">92.8%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:var(--amber);border-width:2px;position:relative">
+    <div style="position:absolute;top:-10px;right:12px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px">NUEVO</div>
+    <div class="card-title">🪞 Proyecto Marcela</div>
+    <div class="metrics" style="margin-bottom:0;grid-template-columns:repeat(3,1fr)">
+      <div class="metric"><div class="lbl">Valor total</div><div class="val" style="color:var(--text);font-size:18px">$4,200,000</div></div>
+      <div class="metric"><div class="lbl">Abono recibido</div><div class="val val-green" style="font-size:18px">$2,100,000</div></div>
+      <div class="metric"><div class="lbl">Saldo pendiente</div><div class="val val-amber" style="font-size:18px">$2,100,000</div></div>
+      <div class="metric"><div class="lbl">Costos materiales</div><div class="val val-red" style="font-size:18px">$738,300</div><div class="sub">Grupo Mond + Madefront</div></div>
+      <div class="metric"><div class="lbl">Utilidad proy.</div><div class="val val-green" style="font-size:18px">$3,461,700</div></div>
+      <div class="metric"><div class="lbl">Margen</div><div class="val val-green" style="font-size:18px">82.4%</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Comparativo de proyectos</div>
+    <div class="chart-wrap" style="height:220px">
+      <canvas id="cProyectos"></canvas>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+function show(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+const gc = 'rgba(0,0,0,0.06)', tc = '#6b6860';
+
+// Ingresos vs egresos por día (6 días)
+new Chart(document.getElementById('cBarDia'), {
+  type:'bar',
+  data:{
+    labels:['01/Jun','02/Jun','03/Jun','04/Jun','05/Jun','06/Jun'],
+    datasets:[
+      {label:'Ingresos',data:[112000,0,124000,2806500,0,605000],backgroundColor:['#1a6b47','#1a6b47','#1a6b47','#1a6b47','#1a6b47','#d4850a'],borderRadius:5,borderSkipped:false},
+      {label:'Egresos',data:[77000,24000,114000,864600,65100,1244300],backgroundColor:['#b83232','#b83232','#b83232','#b83232','#b83232','#c04a2b'],borderRadius:5,borderSkipped:false}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:tc,font:{size:11}},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>v>=1000000?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1000).toFixed(0)+'K'},grid:{color:gc}}}}
+});
+
+// Pie egresos
+new Chart(document.getElementById('cPieEgr'), {
+  type:'doughnut',
+  data:{
+    labels:['Nómina+Honorarios','Maibeline','Costo Marcela','Cta. Giovanny','Costo Yair','Costo Oswaldo','Gastos Claudia','Gastos Moto','Bancarios+otros'],
+    datasets:[{data:[1005000,811500,738300,421600,393690,231500,209000,260000,100123],
+      backgroundColor:['#1a4fa0','#b83232','#2a6dd9','#6635b8','#1a6b47','#a05c10','#d47a10','#888','#bbb'],borderWidth:0}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+    plugins:{legend:{position:'right',labels:{font:{family:'DM Sans',size:10},color:tc,padding:6,boxWidth:10}}}}
+});
+
+// Línea acumulada (6 días)
+new Chart(document.getElementById('cLinea'), {
+  type:'line',
+  data:{
+    labels:['01/Jun','02/Jun','03/Jun','04/Jun','05/Jun','06/Jun'],
+    datasets:[
+      {label:'Ing. acum.',data:[112000,112000,236000,3042500,3042500,3677519],borderColor:'#1a6b47',backgroundColor:'rgba(26,107,71,0.08)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#1a6b47'},
+      {label:'Gas. acum.',data:[77000,101000,357767,1134551,1261168,2693000],borderColor:'#b83232',backgroundColor:'rgba(184,50,50,0.06)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#b83232'}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:tc}}},
+    scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>v>=1000000?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1000).toFixed(0)+'K'},grid:{color:gc}}}}
+});
+
+// Giovanny bar (6 días)
+new Chart(document.getElementById('cGioBar'), {
+  type:'bar',
+  data:{
+    labels:['01/Jun','02/Jun','03/Jun','04/Jun','05/Jun','06/Jun'],
+    datasets:[
+      {label:'Caja',data:[52000,24000,40000,14000,51000,0],backgroundColor:'#8b52e8',borderRadius:4,borderSkipped:false},
+      {label:'Banco/Nequi',data:[52700,23400,43300,27900,49700,43600],backgroundColor:'#c4a8f5',borderRadius:4,borderSkipped:false}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:tc}}},
+    scales:{x:{ticks:{color:tc},grid:{color:gc},stacked:true},y:{ticks:{color:tc,callback:v=>'$'+(v/1000).toFixed(0)+'K'},grid:{color:gc},stacked:true}}}
+});
+
+// Giovanny pie
+new Chart(document.getElementById('cGioPie'), {
+  type:'doughnut',
+  data:{
+    labels:['Caja efectivo','Banco/Nequi'],
+    datasets:[{data:[181000,240600],backgroundColor:['#6635b8','#c4a8f5'],borderWidth:0}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:12},color:tc,padding:12}}}}
+});
+
+// Proyectos
+new Chart(document.getElementById('cProyectos'), {
+  type:'bar',
+  data:{
+    labels:['Keidy','Oswaldo','Marcela'],
+    datasets:[
+      {label:'Abono recibido',data:[300000,1600000,2100000],backgroundColor:'#1a6b47',borderRadius:4,borderSkipped:false},
+      {label:'Saldo pendiente',data:[280000,1600000,2100000],backgroundColor:'#f3d087',borderRadius:4,borderSkipped:false},
+      {label:'Costo registrado',data:[393690,231500,738300],backgroundColor:'#b83232',borderRadius:4,borderSkipped:false}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:tc}}},
+    scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>'$'+(v/1e6).toFixed(1)+'M'},grid:{color:gc}}}}
+});
+</script>
+</body>
+</html>
