@@ -19,6 +19,7 @@ app.use('/api/nomina',      require('./routes/nomina'));
 app.use('/api/facturas',    require('./routes/facturas'));
 app.use('/api/giovanny',    require('./routes/giovanny'));
 app.use('/api/dashboard',   require('./routes/dashboard'));
+app.use('/api/seed-junio',  require('./routes/seed'));
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', app: 'Amuebla Tu Hogar API', version: '1.0.0' });
