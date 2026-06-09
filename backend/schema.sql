@@ -133,4 +133,4 @@ CREATE INDEX IF NOT EXISTS idx_mov_fecha       ON movimientos(fecha);
 CREATE INDEX IF NOT EXISTS idx_mov_subtipo     ON movimientos(subtipo);
 CREATE INDEX IF NOT EXISTS idx_mov_proyecto    ON movimientos(proyecto_id);
 CREATE INDEX IF NOT EXISTS idx_mov_tercero     ON movimientos(tercero_id);
-CREATE INDEX IF NOT EXISTS idx_mov_mes         ON movimientos(TO_CHAR(fecha, 'YYYY-MM'));
+-- idx_mov_mes omitido: TO_CHAR no es IMMUTABLE en PostgreSQL
